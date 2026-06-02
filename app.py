@@ -32,12 +32,176 @@ def serve():
     from fastapi.responses import JSONResponse
     from functions.routes import router as tools_router
 
+    from fastapi.middleware.cors import CORSMiddleware
+
     web_app = FastAPI(title="Inmobiliaria Voice Agent")
+    web_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["GET", "POST"],
+        allow_headers=["*"],
+    )
     web_app.include_router(tools_router)
 
     @web_app.get("/health")
     async def health():
         return {"status": "ok", "service": "inmobiliaria-voice-agent"}
+
+    @web_app.get("/metrics")
+    async def metrics():
+        """
+        Agrega métricas reales de Retell AI + Notion.
+        Llamado por el dashboard (GitHub Pages) para mostrar datos en tiempo real.
+        """
+        import time
+        import httpx as _httpx
+
+        retell_key  = os.environ["RETELL_API_KEY"]
+        notion_key  = os.environ["NOTION_API_KEY"]
+        llamadas_db = os.environ["NOTION_LLAMADAS_DB_ID"]
+        leads_db    = os.environ["NOTION_LEADS_DB_ID"]
+
+        r_headers = {"Authorization": f"Bearer {retell_key}", "Content-Type": "application/json"}
+        n_headers = {"Authorization": f"Bearer {notion_key}", "Notion-Version": "2022-06-28", "Content-Type": "application/json"}
+
+        now     = time.time() * 1000
+        DAY_MS  = 86_400_000
+        WEEK_MS = 7 * DAY_MS
+
+        # ── Retell: todas las llamadas ──────────────────────────────────────
+        r = _httpx.post("https://api.retellai.com/v2/list-calls",
+                        headers=r_headers, json={"limit": 100}, timeout=15)
+        calls = r.json() if r.is_success else []
+
+        ended       = [c for c in calls if c.get("call_status") == "ended"]
+        week_calls  = [c for c in calls if (c.get("start_timestamp") or 0) > now - WEEK_MS]
+        today_calls = [c for c in calls if (c.get("start_timestamp") or 0) > now - DAY_MS]
+
+        durations = [(c.get("duration_ms") or 0) / 60_000 for c in ended if c.get("duration_ms")]
+        avg_dur   = round(sum(durations) / len(durations), 1) if durations else 0.0
+
+        day_names = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
+        by_day: dict = {}
+        for i in range(6, -1, -1):
+            import datetime as _dt
+            d = _dt.datetime.fromtimestamp((now - i * DAY_MS) / 1000)
+            by_day[day_names[d.weekday() + 1 if d.weekday() < 6 else 0]] = {"llamadas": 0, "duracion": []}
+        # reconstruir con índice correcto
+        by_day2: dict = {}
+        for i in range(6, -1, -1):
+            import datetime as _dt
+            d   = _dt.datetime.fromtimestamp((now - i * DAY_MS) / 1000)
+            key = day_names[d.weekday() + 1 if d.weekday() < 6 else 0]
+            # use isoweekday 1=Mon..7=Sun, map to our array
+            key = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"][d.weekday()]
+            by_day2[key] = {"llamadas": 0, "duracion": []}
+
+        for c in week_calls:
+            import datetime as _dt
+            d   = _dt.datetime.fromtimestamp((c.get("start_timestamp") or 0) / 1000)
+            key = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"][d.weekday()]
+            if key in by_day2:
+                by_day2[key]["llamadas"] += 1
+                if c.get("duration_ms"):
+                    by_day2[key]["duracion"].append(c["duration_ms"] / 60_000)
+
+        llamadas_por_dia = [
+            {
+                "dia":      dia,
+                "llamadas": v["llamadas"],
+                "duracion": round(sum(v["duracion"]) / len(v["duracion"]), 1) if v["duracion"] else 0,
+                "costo":    round(sum(v["duracion"]) * 0.07, 2),
+            }
+            for dia, v in by_day2.items()
+        ]
+
+        # ── Notion: llamadas registradas ────────────────────────────────────
+        rn = _httpx.post(f"https://api.notion.com/v1/databases/{llamadas_db}/query",
+                         headers=n_headers, json={}, timeout=15)
+        n_calls = (rn.json().get("results") or []) if rn.is_success else []
+
+        citas_agendadas = sum(
+            1 for c in n_calls
+            if (c.get("properties") or {}).get("Siguiente accion", {}).get("select", {}).get("name") == "Agendar cita"
+        )
+        completadas = sum(
+            1 for c in n_calls
+            if (c.get("properties") or {}).get("Estado llamada", {}).get("select", {}).get("name") == "Completada"
+        )
+        tasa_exito = round((completadas / len(n_calls)) * 100) if n_calls else 0
+
+        recent_calls = []
+        for c in n_calls[:6]:
+            props     = c.get("properties") or {}
+            sig_acc   = props.get("Siguiente accion", {}).get("select", {}).get("name", "—")
+            estado    = props.get("Estado llamada", {}).get("select", {}).get("name", "—")
+            resumen   = (props.get("Resumen IA", {}).get("rich_text") or [{}])[0].get("text", {}).get("content", "")
+            call_id   = (props.get("Retell Call ID", {}).get("rich_text") or [{}])[0].get("text", {}).get("content", "")
+            dur_seg   = props.get("Duracion (seg)", {}).get("number")
+            fecha_raw = (props.get("Fecha y hora", {}).get("date") or {}).get("start") or c.get("created_time", "")
+
+            retell_c  = next((rc for rc in calls if rc.get("call_id") == call_id), {})
+            from_num  = retell_c.get("from_number") or "—"
+            dur_min   = (
+                f"{int(retell_c['duration_ms']//60000)}m {int((retell_c['duration_ms']%60000)//1000)}s"
+                if retell_c.get("duration_ms") else
+                (f"{dur_seg//60}m {dur_seg%60}s" if dur_seg else "—")
+            )
+            nombre = (retell_c.get("retell_llm_dynamic_variables") or {}).get("nombre") or resumen[:25] or "—"
+
+            import datetime as _dt
+            try:
+                fecha_fmt = _dt.datetime.fromisoformat(fecha_raw.replace("Z", "+00:00")).strftime("%-d %b, %I:%M %p")
+            except Exception:
+                fecha_fmt = fecha_raw[:10]
+
+            recent_calls.append({
+                "id":          c["id"],
+                "nombre":      nombre,
+                "caller":      from_num,
+                "duracion":    dur_min,
+                "resultado":   sig_acc,
+                "estado":      estado,
+                "resumen":     resumen[:220],
+                "fecha":       fecha_fmt,
+                "temperatura": (retell_c.get("retell_llm_dynamic_variables") or {}).get("temperatura", "—"),
+            })
+
+        # ── Notion: leads activos ───────────────────────────────────────────
+        rl = _httpx.post(f"https://api.notion.com/v1/databases/{leads_db}/query",
+                         headers=n_headers, json={}, timeout=15)
+        leads = (rl.json().get("results") or []) if rl.is_success else []
+
+        temp_count = {"Hot": 0, "Warm": 0, "Cold": 0, "Sin clasificar": 0}
+        for l in leads:
+            t = (l.get("properties") or {}).get("Temperatura", {}).get("select", {}).get("name", "Sin clasificar")
+            temp_count[t if t in temp_count else "Sin clasificar"] += 1
+
+        total_min   = sum(durations)
+        costo_semana = round(total_min * 0.07, 2)
+
+        return {
+            "kpis": {
+                "llamadasHoy":       len(today_calls),
+                "llamadasSemana":    len(week_calls),
+                "llamadasTotal":     len(calls),
+                "citasAgendadas":    citas_agendadas,
+                "tasaExito":         tasa_exito,
+                "duracionPromedio":  avg_dur,
+                "costoSemana":       costo_semana,
+                "costoLlamada":      round(costo_semana / len(ended), 3) if ended else 0,
+                "leadsActivos":      len(leads),
+                "leadsTotal":        len(n_calls),
+            },
+            "llamadasPorDia":   llamadas_por_dia,
+            "temperaturaLeads": [
+                {"name": "Hot",           "value": temp_count["Hot"],           "color": "#ef4444"},
+                {"name": "Warm",          "value": temp_count["Warm"],          "color": "#f59e0b"},
+                {"name": "Cold",          "value": temp_count["Cold"],          "color": "#60a5fa"},
+                {"name": "Sin clasificar","value": temp_count["Sin clasificar"],"color": "#3d3b4f"},
+            ],
+            "recentCalls": recent_calls,
+        }
 
     @web_app.post("/retell/voice")
     async def retell_voice_inbound(request: Request):

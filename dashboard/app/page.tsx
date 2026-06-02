@@ -17,18 +17,22 @@ export default function Dashboard() {
   const [loading, setLoading]   = useState(true)
   const [refreshing, setRefreshing] = useState(false)
 
+  const MODAL_URL = "https://matterasystems--inmobiliaria-voice-agent-serve.modal.run"
+  const REFRESH_INTERVAL = 30_000   // 30 segundos
+
   const load = async (showRefresh = false) => {
     if (showRefresh) setRefreshing(true)
     try {
-      const res = await fetch("/api/metrics", { cache: "no-store" })
+      // Llamar directamente al endpoint de Modal (funciona desde GitHub Pages)
+      const res = await fetch(`${MODAL_URL}/metrics`, { cache: "no-store" })
       if (res.ok) {
         setData(await res.json())
       } else {
-        // Fallback a datos de demo (GitHub Pages / sin servidor)
         const { demoMetrics } = await import("@/lib/fetchMetrics")
         setData(demoMetrics)
       }
     } catch {
+      // Fallback a demo si Modal no está disponible
       const { demoMetrics } = await import("@/lib/fetchMetrics")
       setData(demoMetrics)
     } finally {
@@ -37,7 +41,12 @@ export default function Dashboard() {
     }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    // Auto-refresh cada 30 segundos
+    const interval = setInterval(() => load(), REFRESH_INTERVAL)
+    return () => clearInterval(interval)
+  }, [])
 
   const today = new Date().toLocaleDateString("es-MX", {
     weekday: "long", day: "numeric", month: "long"
