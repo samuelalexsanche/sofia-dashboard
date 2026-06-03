@@ -13,13 +13,7 @@ export function CostCard({ costoSemana = 0, costoLlamada = 0, data = [] }: CostC
   const chartData = data.map(d => ({ d: d.dia, v: +(d.llamadas * (costoLlamada || 0.07) * (d.duracion || 2.9)).toFixed(2) }))
 
   return (
-    <div className="card" style={{
-      padding: "18px 24px",
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr 1fr 220px",
-      gap: 24,
-      alignItems: "center",
-    }}>
+    <div className="card cost-grid" style={{ padding: "18px 24px" }}>
       <div>
         <p className="label">Costo esta semana</p>
         <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 8 }}>
@@ -42,7 +36,7 @@ export function CostCard({ costoSemana = 0, costoLlamada = 0, data = [] }: CostC
         <p style={{ fontSize: 11, color: "#4a4760", marginTop: 2 }}>estimado USD</p>
       </div>
 
-      <div style={{ height: 60 }}>
+      <div className="cost-sparkline" style={{ height: 60 }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
             <defs>

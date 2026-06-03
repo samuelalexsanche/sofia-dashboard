@@ -80,7 +80,7 @@ export function AgentControls() {
   return (
     <div className="card">
       {/* Tabs */}
-      <div style={{
+      <div className="controls-tabs" style={{
         display: "flex", gap: 4, padding: 8,
         borderBottom: "1px solid rgba(255,255,255,0.06)",
         background: "rgba(255,255,255,0.01)",

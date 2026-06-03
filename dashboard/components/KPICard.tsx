@@ -21,7 +21,7 @@ export function KPICard({ label, value, delta, sub, icon, accent, delay = 0 }: K
     <div
       className={cn("card card-hover", delayClass, accent && "glow-gold")}
       style={{
-        padding: "22px 24px",
+        padding: "clamp(14px, 3vw, 22px) clamp(14px, 3vw, 24px)",
         borderColor: accent ? "rgba(201,147,58,0.4)" : undefined,
         background: accent
           ? "linear-gradient(135deg, rgba(201,147,58,0.10) 0%, #0d0d1a 60%)"
