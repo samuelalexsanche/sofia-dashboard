@@ -203,6 +203,93 @@ def serve():
             "recentCalls": recent_calls,
         }
 
+    @web_app.post("/agent/update")
+    async def agent_update(request: Request):
+        """
+        Actualiza el agente y/o LLM de Retell desde el dashboard.
+        Body JSON (todos opcionales):
+          prompt, voice_id, voice_speed, responsiveness, interruption_sensitivity, model_temperature
+        """
+        import httpx as _httpx
+        body = await request.json()
+
+        agent_id = os.environ["RETELL_AGENT_ID"]
+        llm_id   = os.environ["RETELL_LLM_ID"]
+        r_headers = {
+            "Authorization": f"Bearer {os.environ['RETELL_API_KEY']}",
+            "Content-Type":  "application/json",
+        }
+
+        results = {}
+
+        # ── Actualizar agente (voz, velocidad, sensibilidad) ──────────────
+        agent_payload = {}
+        if "voice_id"                in body: agent_payload["voice_id"]                = body["voice_id"]
+        if "voice_speed"             in body: agent_payload["voice_speed"]             = body["voice_speed"]
+        if "responsiveness"          in body: agent_payload["responsiveness"]          = body["responsiveness"]
+        if "interruption_sensitivity" in body: agent_payload["interruption_sensitivity"] = body["interruption_sensitivity"]
+
+        if agent_payload:
+            r = _httpx.patch(
+                f"https://api.retellai.com/update-agent/{agent_id}",
+                headers=r_headers, json=agent_payload, timeout=15,
+            )
+            results["agent"] = {"ok": r.is_success, "status": r.status_code}
+            if not r.is_success:
+                results["agent"]["error"] = r.text[:200]
+
+        # ── Actualizar LLM (prompt, temperatura) ─────────────────────────
+        llm_payload = {}
+        if "prompt"             in body: llm_payload["general_prompt"]    = body["prompt"]
+        if "model_temperature"  in body: llm_payload["model_temperature"] = body["model_temperature"]
+
+        if llm_payload:
+            r2 = _httpx.patch(
+                f"https://api.retellai.com/update-retell-llm/{llm_id}",
+                headers=r_headers, json=llm_payload, timeout=15,
+            )
+            results["llm"] = {"ok": r2.is_success, "status": r2.status_code}
+            if not r2.is_success:
+                results["llm"]["error"] = r2.text[:200]
+
+        success = all(v.get("ok", True) for v in results.values())
+        return JSONResponse({"success": success, "results": results})
+
+    @web_app.post("/agent/call")
+    async def agent_call(request: Request):
+        """Dispara una llamada saliente desde el dashboard."""
+        import httpx as _httpx
+        from urllib.parse import urlencode
+        from twilio.rest import Client as TwilioClient
+
+        body    = await request.json()
+        to_num  = body.get("to_number", "").strip()
+        if not to_num:
+            return JSONResponse({"success": False, "error": "to_number requerido"}, status_code=400)
+
+        modal_url = os.environ["MODAL_APP_URL"]
+        from_num  = os.environ["TWILIO_PHONE_NUMBER"]
+        twilio    = TwilioClient(os.environ["TWILIO_ACCOUNT_SID"], os.environ["TWILIO_AUTH_TOKEN"])
+
+        qs = urlencode({
+            "nombre":        body.get("nombre", "Cliente"),
+            "zona_interes":  body.get("zona_interes", ""),
+            "tipo_busqueda": body.get("tipo_busqueda", ""),
+            "presupuesto":   body.get("presupuesto", ""),
+            "recamaras":     body.get("recamaras", ""),
+            "lead_id":       body.get("lead_id", ""),
+        })
+        webhook_url = f"{modal_url}/retell/voice-outbound?{qs}"
+
+        try:
+            call = twilio.calls.create(
+                to=to_num, from_=from_num,
+                url=webhook_url, method="POST", timeout=30,
+            )
+            return JSONResponse({"success": True, "call_sid": call.sid})
+        except Exception as exc:
+            return JSONResponse({"success": False, "error": str(exc)}, status_code=500)
+
     @web_app.post("/retell/voice")
     async def retell_voice_inbound(request: Request):
         """
