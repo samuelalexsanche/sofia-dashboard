@@ -206,8 +206,8 @@
       $("#dorsalSwitch").classList.toggle("on", state.dorsal);
       $("#dorsalSwitch").setAttribute("aria-checked", state.dorsal);
       $("#dorsalFields").hidden = !state.dorsal;
-      if (state.dorsal) setView("custom"); // salta al lienzo editable en vivo
-      else renderStage();
+      // al activar: salta a personalizar; al desactivar: vuelve a la foto original
+      setView(state.dorsal ? "custom" : "photo");
       updatePrice();
     });
 
