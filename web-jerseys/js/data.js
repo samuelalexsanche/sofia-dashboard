@@ -16,7 +16,7 @@ window.SHOP = {
    - PLACEHOLDER_BLANK: misma camiseta con la espalda EN BLANCO (sin estampar)
      sobre la que se personaliza el dorsal en vivo. */
 window.PLACEHOLDER_IMG = "assets/jerseys/argentina-back.jpg";
-window.PLACEHOLDER_BLANK = "assets/jerseys/argentina-back-blank.jpg";
+window.PLACEHOLDER_BLANK = "assets/jerseys/argentina-back-blank.jpg?v=3";
 
 /* Calibración del overlay de personalización SOBRE FOTO (en % del cuadro
    de la imagen). Usado cuando una camiseta tiene foto de espalda EN BLANCO
