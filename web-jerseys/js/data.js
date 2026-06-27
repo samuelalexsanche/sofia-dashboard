@@ -11,9 +11,12 @@ window.SHOP = {
   currency: "MXN",
 };
 
-/* Imagen real usada como PLACEHOLDER en todas las cards por ahora.
-   Sustituye cada product.img por la foto real de su camiseta cuando la tengas. */
+/* Imágenes reales usadas como PLACEHOLDER por ahora (todas Argentina).
+   - PLACEHOLDER_IMG: foto que se muestra en la card y en la pestaña "Foto".
+   - PLACEHOLDER_BLANK: misma camiseta con la espalda EN BLANCO (sin estampar)
+     sobre la que se personaliza el dorsal en vivo. */
 window.PLACEHOLDER_IMG = "assets/jerseys/argentina-back.jpg";
+window.PLACEHOLDER_BLANK = "assets/jerseys/argentina-back-blank.jpg";
 
 /* Calibración del overlay de personalización SOBRE FOTO (en % del cuadro
    de la imagen). Usado cuando una camiseta tiene foto de espalda EN BLANCO
@@ -176,9 +179,12 @@ window.WORLDCUP = [
   },
 ];
 
-/* Asigna la foto placeholder a toda card que no tenga imagen propia todavía */
+/* Asigna las fotos placeholder: card/Foto = imagen normal; Personalizar = espalda
+   en blanco con overlay del dorsal en vivo (blankBack = true). */
 [...window.PRODUCTS, ...window.WORLDCUP].forEach((p) => {
   if (!p.img) p.img = window.PLACEHOLDER_IMG;
+  p.imgBack = p.imgBack || window.PLACEHOLDER_BLANK;
+  p.blankBack = true;
 });
 /* Une selecciones al catálogo para que getProduct las encuentre */
 window.PRODUCTS = window.PRODUCTS.concat(window.WORLDCUP);

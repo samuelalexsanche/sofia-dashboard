@@ -47,39 +47,50 @@
     });
   }
 
-  /* --- Foto real (+ overlay si la foto viene EN BLANCO) --------------- */
-  function photoHTML() {
-    let overlay = "";
-    if (product.blankBack && state.dorsal) {
-      const o = PHOTO_OVERLAY;
-      const name = (state.name || "").toUpperCase();
-      const num = state.number || "";
-      overlay = `<div class="overlay-dorsal">
-        ${name ? `<span class="ov-name" style="top:${o.name.cy}%;font-size:8cqw;color:${o.name.color}">${name}</span>` : ""}
-        ${num ? `<span class="ov-number" style="top:${o.number.cy}%;font-size:26cqw;color:${o.number.color}">${num}</span>` : ""}
-      </div>`;
-    }
-    return `<div class="viewer__photo-wrap"><img src="${product.img}" alt="${product.club} ${product.name}" />${overlay}</div>`;
+  /* --- Foto real de la camiseta (pestaña Foto) ------------------------ */
+  function fotoHTML() {
+    return `<div class="viewer__photo-wrap"><img src="${product.img}" alt="${product.club} ${product.name}" /></div>`;
+  }
+
+  /* --- Parches superpuestos sobre la manga ---------------------------- */
+  function patchesOverlay() {
+    if (!state.patches.length) return "";
+    return state.patches.slice(0, 3).map((pid, i) => {
+      const d = OPTIONS.patches.find((x) => x.id === pid);
+      return d ? `<span class="ov-patch" style="top:${21 + i * 9}%">${d.tag}</span>` : "";
+    }).join("");
+  }
+
+  /* --- Espalda real EN BLANCO + dorsal en vivo (pestaña Personalizar) - */
+  function personalizeHTML(wrapClass) {
+    const o = PHOTO_OVERLAY;
+    const hasName = state.dorsal && state.name;
+    const hasNum = state.dorsal && state.number;
+    const name = hasName ? state.name.toUpperCase() : "TU NOMBRE";
+    const num = hasNum ? state.number : "00";
+    return `<div class="${wrapClass || "viewer__photo-wrap"}">
+      <img src="${product.imgBack}" alt="${product.club} espalda personalizable" />
+      <div class="overlay-dorsal">
+        <span class="ov-name" style="top:${o.name.cy}%;color:${o.name.color};opacity:${hasName ? 1 : 0.3}">${name}</span>
+        <span class="ov-number" style="top:${o.number.cy}%;color:${o.number.color};opacity:${hasNum ? 1 : 0.3}">${num}</span>
+        ${patchesOverlay()}
+      </div>
+    </div>`;
   }
 
   /* --- Render del visor según vista ----------------------------------- */
   function renderStage() {
     const stage = $("#stage");
     const note = $("#viewerNote");
+    stage.classList.add("viewer__stage--photo");
     if (state.view === "photo") {
-      stage.classList.add("viewer__stage--photo");
-      stage.innerHTML = photoHTML();
-      if (product.blankBack) {
-        note.innerHTML = state.dorsal
-          ? "Vista previa sobre la foto real · en vivo"
-          : "Activa “Personaliza tu dorsal” para ponerle tu nombre";
-      } else {
-        note.innerHTML = "Foto de muestra · personaliza tu dorsal en la pestaña <b>Personalizar</b>";
-      }
+      stage.innerHTML = fotoHTML();
+      note.innerHTML = "Camiseta oficial · foto real";
     } else {
-      stage.classList.remove("viewer__stage--photo");
-      stage.innerHTML = customSVG();
-      note.innerHTML = "Vista de personalización en vivo — tu nombre, número y parches";
+      stage.innerHTML = personalizeHTML();
+      note.innerHTML = state.dorsal
+        ? "Tu dorsal sobre la camiseta real · en vivo"
+        : "Activa “Personaliza tu dorsal” para escribir tu nombre y número";
     }
   }
 
@@ -255,7 +266,7 @@
     sheetPanel.innerHTML = `
       <div class="sheet__head"><h3>Confirmar pedido</h3><button class="sheet__close" data-close aria-label="Cerrar">✕</button></div>
       <div class="order-summary">
-        <div class="jersey">${customSVG(0.3)}</div>
+        ${personalizeHTML("mini-photo-wrap")}
         <div class="order-summary__meta">
           <strong>${product.club} · ${product.name}</strong>
           Talla ${state.size} · ${OPTIONS.versions.find((v) => v.id === state.version).label}

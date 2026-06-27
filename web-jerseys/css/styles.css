@@ -722,8 +722,25 @@ img, svg { display: block; }
   font-family: var(--font-dorsal); font-weight: 700; line-height: 1;
   white-space: nowrap; text-align: center;
 }
-.overlay-dorsal .ov-name { letter-spacing: 0.04em; }
-.overlay-dorsal .ov-number { letter-spacing: -0.02em; }
+.overlay-dorsal .ov-name { letter-spacing: 0.06em; font-size: 8.5cqw; }
+.overlay-dorsal .ov-number { letter-spacing: -0.02em; font-size: 33cqw; }
+.overlay-dorsal .ov-patch {
+  position: absolute; right: 15%; transform: translateY(-50%);
+  font-family: var(--font-dorsal); font-weight: 700; font-size: 4.6cqw; line-height: 1;
+  color: #fff; background: #0f1f47; border-radius: 18%; padding: 0.32em 0.42em;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+/* mini preview de la espalda personalizada (resumen del pedido) */
+.mini-photo-wrap {
+  position: relative; container-type: inline-size;
+  width: 70px; flex: 0 0 70px; border-radius: 8px; overflow: hidden;
+  background: #f1f1f4;
+}
+.mini-photo-wrap img { width: 100%; height: auto; display: block; }
+.mini-photo-wrap .overlay-dorsal .ov-name { font-size: 9cqw; }
+.mini-photo-wrap .overlay-dorsal .ov-number { font-size: 34cqw; }
+.mini-photo-wrap .overlay-dorsal .ov-patch { font-size: 6cqw; }
 
 /* nota cuando la foto ya viene estampada */
 .viewer__note {
