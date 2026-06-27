@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DORSAL — Jerseys de futbol · Guadalajara</title>
+  <meta name="description" content="Jerseys de futbol personalizadas en Guadalajara. Elige tu equipo, tu nombre, tu número y tus parches. Hecho para la afición." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Saira+Condensed:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <div class="nav__inner">
+      <a class="brand" href="index.html">DORS<b>A</b>L</a>
+      <div class="nav__links">
+        <a href="#catalogo">Camisetas</a>
+        <a href="#personaliza">Personaliza</a>
+        <a href="#equipos">Equipos</a>
+        <a class="nav__bag" href="#catalogo">Comprar</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero__glow" id="heroGlow"></div>
+    <div class="hero__content">
+      <div class="eyebrow hero__eyebrow">Guadalajara, Jalisco</div>
+      <h1 class="display">Tu nombre.<br />Tu número.<br /><span class="ghost">Tu camiseta.</span></h1>
+      <p class="hero__sub">Jerseys oficiales de tu equipo, personalizadas al detalle. Dorsal, parches y versión jugador — montadas a mano en Guadalajara.</p>
+      <div class="hero__cta">
+        <a class="btn btn--primary btn--lg" href="#catalogo">Ver camisetas</a>
+        <a class="btn btn--ghost btn--lg" href="#personaliza">Cómo funciona</a>
+      </div>
+    </div>
+    <div class="hero__jersey" id="heroJersey"></div>
+    <div class="hero__scrollhint"><span>Desliza</span><span class="line"></span></div>
+  </header>
+
+  <main>
+    <!-- CATÁLOGO -->
+    <section class="section" id="catalogo">
+      <div class="wrap">
+        <div class="section__head reveal">
+          <div class="eyebrow">El catálogo</div>
+          <h2 class="display">La camiseta de tu equipo,<br />como debe verse.</h2>
+          <p>Cada jersey es clickeable. Entra, personalízala y haz tu pedido en minutos.</p>
+        </div>
+        <div class="grid grid--feature" id="catalogGrid"></div>
+      </div>
+    </section>
+
+    <!-- COLECCIÓN MUNDIAL -->
+    <section class="wc" id="mundial">
+      <div class="wrap section">
+        <div class="wc__head reveal">
+          <div>
+            <div class="eyebrow">Colección Mundial</div>
+            <h2 class="display">Las selecciones<br />que todos quieren.</h2>
+            <p>Las camisetas favoritas rumbo al Mundial 2026. Personalízalas con tu apellido y tu número.</p>
+          </div>
+          <div class="wc__stars">★★★ Favoritas del torneo</div>
+        </div>
+        <div class="wc-shelf" id="wcShelf"></div>
+      </div>
+    </section>
+
+    <!-- PERSONALIZA -->
+    <section class="section" id="personaliza">
+      <div class="wrap">
+        <div class="feature-split reveal">
+          <div>
+            <div class="eyebrow">La firma DORSAL</div>
+            <h2 class="display">Pónle tu apellido.<br />Pónle tu número.</h2>
+            <p>Escribe tu dorsal y míralo aparecer en la espalda al instante, en la tipografía real de competencia. Suma los parches de Liga MX, Concacaf o campeón.</p>
+            <ul class="feature-list">
+              <li><span class="dot">✓</span><div><strong>Dorsal personalizado</strong> — nombre y número con vista previa en vivo.</div></li>
+              <li><span class="dot">✓</span><div><strong>Parches oficiales</strong> — Liga MX, Concacaf, campeón y bandera de México.</div></li>
+              <li><span class="dot">✓</span><div><strong>Versión jugador o afición</strong> — tela de competencia o corte regular.</div></li>
+            </ul>
+            <div style="margin-top:30px"><a class="btn btn--primary" href="#catalogo">Empezar a personalizar</a></div>
+          </div>
+          <div class="feature-split__art" id="featureArt"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EQUIPOS -->
+    <section class="section" id="equipos">
+      <div class="wrap">
+        <div class="section__head reveal" style="text-align:center; margin-left:auto; margin-right:auto;">
+          <div class="eyebrow">Cobertura</div>
+          <h2 class="display">Liga MX, Selección y Europa.</h2>
+          <p style="margin-left:auto;margin-right:auto;">Trabajamos los kits que la afición de Guadalajara pide. ¿No ves el tuyo? Lo conseguimos.</p>
+        </div>
+        <div class="teams-strip reveal" id="teamsStrip"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer__grid">
+        <div class="footer__brand">
+          <span class="brand">DORS<b style="color:var(--accent)">A</b>L</span>
+          <p>Jerseys de futbol personalizadas. Hecho en Guadalajara para la afición de todo México.</p>
+        </div>
+        <div class="footer__col">
+          <h4>Tienda</h4>
+          <a href="#catalogo">Camisetas</a>
+          <a href="#personaliza">Personaliza tu dorsal</a>
+          <a href="#equipos">Equipos</a>
+        </div>
+        <div class="footer__col">
+          <h4>Ayuda</h4>
+          <a href="#">Guía de tallas</a>
+          <a href="#">Envíos y entregas</a>
+          <a href="#">Contacto</a>
+        </div>
+        <div class="footer__col">
+          <h4>Contacto</h4>
+          <a href="#" id="footMail"></a>
+          <a href="#" id="footWa"></a>
+          <a href="#">Guadalajara, Jalisco</a>
+        </div>
+      </div>
+      <div class="footer__legal">© <span id="year"></span> DORSAL · Guadalajara. Producto de demostración. Las marcas y escudos pertenecen a sus respectivos clubes.</div>
+    </div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DORSAL — Personaliza tu camiseta</title>
+  <meta name="description" content="Personaliza tu jersey: talla, versión, nombre, número y parches. Pedido directo a la tienda." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Saira+Condensed:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <nav class="nav scrolled" id="nav">
+    <div class="nav__inner">
+      <a class="brand" href="index.html">DORS<b>A</b>L</a>
+      <div class="nav__links">
+        <a href="index.html#catalogo">Camisetas</a>
+        <a href="index.html#personaliza">Personaliza</a>
+        <a href="index.html#equipos">Equipos</a>
+        <a class="nav__bag" href="index.html#catalogo">Catálogo</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="pdp wrap" id="pdp">
+    <div class="pdp__back"><a href="index.html#catalogo">← Volver al catálogo</a></div>
+    <div class="pdp__layout" id="pdpLayout"><!-- render dinámico --></div>
+  </div>
+
+  <!-- BARRA DE COMPRA -->
+  <div class="buybar" id="buybar" hidden>
+    <div class="wrap buybar__inner">
+      <div class="buybar__total">
+        <small>Total</small>
+        <strong id="barTotal">$0</strong>
+        <span class="calc" id="barCalc"></span>
+      </div>
+      <button class="btn btn--team btn--lg" id="checkoutBtn">Continuar pedido</button>
+    </div>
+  </div>
+
+  <!-- CHECKOUT SHEET -->
+  <div class="sheet" id="sheet">
+    <div class="sheet__scrim" data-close></div>
+    <div class="sheet__panel" id="sheetPanel"><!-- render dinámico --></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/producto.js"></script>
+</body>
+</html>
